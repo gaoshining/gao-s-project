@@ -1,0 +1,297 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>（三）高次多项式回归 &mdash; gao  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="（四）数据分析与可视化" href="chapter4.html" />
+    <link rel="prev" title="（二）统计分析准备步骤" href="chapter1.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> gao
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="chapter0.html">（一）一个商业实际案例</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chapter1.html">（二）统计分析准备步骤</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">（三）高次多项式回归</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id2">1.模型类型的选择与超级参数的设置</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">2.训练模型及查看其统计量</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">3.拟合优度评价</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id5">4.模型的优化与重新选择</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id6">5.模型的应用</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="chapter4.html">（四）数据分析与可视化</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">gao</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>（三）高次多项式回归</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/chapter2.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="id1">
+<h1>（三）高次多项式回归<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id2">
+<h2>1.模型类型的选择与超级参数的设置<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>根据相关系数和上一步数据可视化后的散点图，确定用线性回归的方式来建立模型。选择Python统计分析中的常用包Statsmodels。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">statsmodels.api</span> <span class="k">as</span> <span class="nn">sm</span>
+</pre></div>
+</div>
+<p>默认情况下，OLS不含截距项，可以通过如下转换方式来设置截距项这一超级参数。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">X_add_const</span><span class="o">=</span><span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>2.训练模型及查看其统计量<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>以北美5G市场数据为例，进行二次多项式回归</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">X_add_const</span><span class="o">=</span><span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">myModel_updated</span><span class="o">=</span><span class="n">sm</span><span class="o">.</span><span class="n">OLS</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">X_add_const</span><span class="p">)</span>
+<span class="n">results_updated</span> <span class="o">=</span> <span class="n">myModel_updated</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="n">y_predict_updated</span> <span class="o">=</span> <span class="n">results_updated</span><span class="o">.</span><span class="n">predict</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id4">
+<h2>3.拟合优度评价<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<p>(1)用以下语句输出模型参数：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">results_updated</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
+</pre></div>
+</div>
+<img alt="_images/canshu.jpg" src="_images/canshu.jpg" />
+<p>发现R-squared=0.996，说明拟合程度很高。分析其他参数，如AIC等，进一步说明了模型的拟合效果很好。用三次多项式建立模型，比对模型的参数后，发现二次多项式更适合拟合这条曲线，所以选用二次多项式。</p>
+<p>(2)通过可视化的方式查看模型回归效果</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">df_data</span><span class="p">[</span><span class="s1">&#39;time_series&#39;</span><span class="p">],</span><span class="n">df_data</span><span class="p">[</span><span class="s1">&#39;5GNorth&#39;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df_data</span><span class="p">[</span><span class="s1">&#39;time_series&#39;</span><span class="p">],</span><span class="n">y_predict_updated</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/huigui1.jpg" src="_images/huigui1.jpg" />
+</div>
+<div class="section" id="id5">
+<h2>4.模型的优化与重新选择<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<p>用R——square等统计量和数据可视化方法，查看回归效果之后，如果回归效果不好，可以更换多项式次数，即改变模型中的特征矩阵(X).</p>
+<p>比如，将北美2G市场规模用二次多项式拟合后，发现效果不好。对比用不同次数多项式拟合的模型的精度，发现用三次多项式拟合更为精准。下面展示北美2G通过三次多项式回归的代码。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">statsmodels.api</span> <span class="k">as</span> <span class="nn">sm</span>
+<span class="n">df_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="s2">&quot;2G.xlsx&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">df_data</span><span class="p">[</span><span class="s1">&#39;time_series&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">df_data</span><span class="p">[</span><span class="s1">&#39;2G&#39;</span><span class="p">]))</span>
+
+<span class="n">X</span><span class="o">=</span><span class="n">df_data</span><span class="p">[</span><span class="s1">&#39;time_series&#39;</span><span class="p">]</span>
+<span class="n">y</span><span class="o">=</span><span class="n">df_data</span><span class="p">[</span><span class="s1">&#39;2G&#39;</span><span class="p">]</span>
+<span class="n">X</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">X</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="mi">3</span><span class="p">)))</span>
+
+<span class="n">X_add_const</span><span class="o">=</span><span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">myModel_updated</span><span class="o">=</span><span class="n">sm</span><span class="o">.</span><span class="n">OLS</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">X_add_const</span><span class="p">)</span>
+<span class="n">results_updated</span> <span class="o">=</span> <span class="n">myModel_updated</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="n">y_predict_updated</span> <span class="o">=</span> <span class="n">results_updated</span><span class="o">.</span><span class="n">predict</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">results_updated</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">df_data</span><span class="p">[</span><span class="s1">&#39;time_series&#39;</span><span class="p">],</span><span class="n">df_data</span><span class="p">[</span><span class="s1">&#39;2G&#39;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df_data</span><span class="p">[</span><span class="s1">&#39;time_series&#39;</span><span class="p">],</span><span class="n">y_predict_updated</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id6">
+<h2>5.模型的应用<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<p>用最优的模型进行预测，并输出结果。
+比如对北美5G市场进行预测：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="mi">6</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results_updated</span><span class="o">.</span><span class="n">predict</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="n">d</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="mi">2</span><span class="p">)]))</span>
+<span class="n">d</span><span class="o">=</span><span class="mi">7</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results_updated</span><span class="o">.</span><span class="n">predict</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="n">d</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="mi">2</span><span class="p">)]))</span>
+<span class="n">d</span><span class="o">=</span><span class="mi">8</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results_updated</span><span class="o">.</span><span class="n">predict</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="n">d</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="mi">2</span><span class="p">)]))</span>
+<span class="n">d</span><span class="o">=</span><span class="mi">9</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results_updated</span><span class="o">.</span><span class="n">predict</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="n">d</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="mi">2</span><span class="p">)]))</span>
+</pre></div>
+</div>
+<p>输出预测结果如下</p>
+<img alt="_images/yingyong.jpg" src="_images/yingyong.jpg" />
+<p>而对于北美整体市场规模的预测，经计算，时间序列与北美整体规模的相关系数很低，北美整体规模的散点图也显示，整体规模与时间没有线性相关关系。所以本报告分别预测2G、3G、4G的2020年市场规模，与5G加和后，计算出所预测的整体的市场规模。具体预测代码，除多项式次数根据模型参数R-squared、AIC等进行优化调整外，均相同。用此方法预测四个市场2020年的2G、3G、4G、5G以及整体市场规模。</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="chapter4.html" class="btn btn-neutral float-right" title="（四）数据分析与可视化" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="chapter1.html" class="btn btn-neutral float-left" title="（二）统计分析准备步骤" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, gaoshining
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
